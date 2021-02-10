@@ -1,0 +1,13 @@
+[global]
+# Which section should be used
+default = gitlab.com
+ssl_verify = true
+timeout = 5
+
+[gitlab.com]
+url = https://gitlab.com
+# Use one of the following authentication methods
+# See https://docs.gitlab.com/ee/api/README.html#authentication
+private_token = foobar
+oauth_token = foobar
+job_token = foobar
