@@ -1,35 +1,75 @@
 # This is a script that updates projects properties in specific
 # group on GitLab.
 
+import argparse
 import os
 
 import gitlab
 
-# Let's add API key to header, otherwise only read access to API
-group = "10910066"
-visibility = "private"
-merge_requests_enabled = False
-config_file = "python-gitlab.cfg"
 
-# Read environment variable with config
-try:
-    config_file = os.environ["PYTHON_GITLAB_CFG"]
-except KeyError:
-    pass
+CONFIG_FILE = "python-gitlab.cfg"
 
-# Create Gitlab object
-gl = gitlab.Gitlab.from_config(config_files=[config_file])
 
-# Get the projects in group
-group = gl.groups.get(group)
+def parse_args():
+    """
+    Parse arguments.
 
-# Update each project in the group
-for project in group.projects.list():
-    print(
-        "Updating project {group_name}/{project_name}".format(
-            group_name=group.name, project_name=project.name)
+    Return:
+      Argument object.
+    """
+    parser = argparse.ArgumentParser(
+        description="This app uses GitLab API to edit projects in specific group.")
+    parser.add_argument("group", type=int, help="Id of the group to edit")
+    parser.add_argument(
+        "--visibility",
+        help="Set visibility of the projects to specific value",
+        choices=["private", "public"]
     )
-    savable_project = gl.projects.get(project.id)
-    savable_project.visibility = visibility
-    savable_project.merge_requests_enabled = merge_requests_enabled
-    savable_project.save()
+    parser.add_argument(
+        "--merge_requests_enabled",
+        help="Enable/disable merge requests for the projects in group",
+        choices=["True", "False"]
+    )
+
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    # Main
+    args = parse_args()
+    group = args.group
+    visibility = args.visibility
+    merge_requests_enabled = None
+    if args.merge_requests_enabled:
+        merge_requests_enabled = args.merge_requests_enabled == "True"
+    config_file = CONFIG_FILE
+
+    # Read environment variable with config
+    try:
+        config_file = os.environ["PYTHON_GITLAB_CFG"]
+    except KeyError:
+        pass
+
+    # Create Gitlab object
+    gl = gitlab.Gitlab.from_config(config_files=[config_file])
+
+    # Get the projects in group
+    group = gl.groups.get(group)
+
+    # Update each project in the group
+    for project in group.projects.list():
+        print("Project {group_name}/{project_name}".format(
+                group_name=group.name, project_name=project.name)
+        )
+        savable_project = gl.projects.get(project.id)
+        if visibility:
+            print("* visibility: {old} -> {new}".format(
+                old=savable_project.visibility, new=visibility)
+            )
+            savable_project.visibility = visibility
+        if merge_requests_enabled is not None:
+            print("* merge_requests_enabled: {old} -> {new}".format(
+                old=savable_project.merge_requests_enabled, new=merge_requests_enabled)
+            )
+            savable_project.merge_requests_enabled = merge_requests_enabled
+        savable_project.save()
