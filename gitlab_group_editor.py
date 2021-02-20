@@ -30,6 +30,11 @@ def parse_args():
         help="Enable/disable merge requests for the projects in group",
         choices=["True", "False"]
     )
+    parser.add_argument(
+        "--issues_enabled",
+        help="Enable/disable issues for the projects in group",
+        choices=["True", "False"]
+    )
 
     return parser.parse_args()
 
@@ -40,8 +45,13 @@ if __name__ == "__main__":
     group = args.group
     visibility = args.visibility
     merge_requests_enabled = None
+    issues_enabled = None
+
     if args.merge_requests_enabled:
         merge_requests_enabled = args.merge_requests_enabled == "True"
+
+    if args.issues_enabled:
+        issues_enabled = args.issues_enabled == "True"
     config_file = CONFIG_FILE
 
     # Read environment variable with config
@@ -72,4 +82,10 @@ if __name__ == "__main__":
                 old=savable_project.merge_requests_enabled, new=merge_requests_enabled)
             )
             savable_project.merge_requests_enabled = merge_requests_enabled
+
+        if issues_enabled is not None:
+            print("* issues_enabled: {old} -> {new}".format(
+                old=savable_project.issues_enabled, new=issues_enabled)
+            )
+            savable_project.issues_enabled = issues_enabled
         savable_project.save()
