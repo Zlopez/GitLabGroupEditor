@@ -57,7 +57,7 @@ if __name__ == "__main__":
     group = gl.groups.get(group)
 
     # Update each project in the group
-    for project in group.projects.list():
+    for project in group.projects.list(as_list=False):
         print("Project {group_name}/{project_name}".format(
                 group_name=group.name, project_name=project.name)
         )
