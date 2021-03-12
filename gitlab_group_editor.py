@@ -36,6 +36,12 @@ def parse_args():
         choices=["True", "False"]
     )
 
+    parser.add_argument(
+        "--emails_enabled",
+        help="Enable/disable email notifications for the projects in group",
+        choices=["True", "False"]
+    )
+
     return parser.parse_args()
 
 
@@ -46,12 +52,17 @@ if __name__ == "__main__":
     visibility = args.visibility
     merge_requests_enabled = None
     issues_enabled = None
+    emails_disabled = None
 
     if args.merge_requests_enabled:
         merge_requests_enabled = args.merge_requests_enabled == "True"
 
     if args.issues_enabled:
         issues_enabled = args.issues_enabled == "True"
+
+    if args.emails_enabled:
+        emails_disabled = args.emails_enabled != "True"
+
     config_file = CONFIG_FILE
 
     # Read environment variable with config
@@ -88,4 +99,10 @@ if __name__ == "__main__":
                 old=savable_project.issues_enabled, new=issues_enabled)
             )
             savable_project.issues_enabled = issues_enabled
+
+        if emails_disabled is not None:
+            print("* emails_disabled: {old} -> {new}".format(
+                old=savable_project.emails_disabled, new=emails_disabled)
+            )
+            savable_project.emails_disabled = emails_disabled
         savable_project.save()
