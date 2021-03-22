@@ -42,6 +42,12 @@ def parse_args():
         choices=["True", "False"]
     )
 
+    parser.add_argument(
+        "--dry-run",
+        help="Print the changes that would occur, but do not actually save them",
+        action=argparse.BooleanOptionalAction
+    )
+
     return parser.parse_args()
 
 
@@ -106,9 +112,10 @@ if __name__ == "__main__":
             )
             savable_project.emails_disabled = emails_disabled
 
-        while True:
-            try:
-                savable_project.save()
-                break
-            except requests.exceptions.ReadTimeout:
-                pass
+        if not args.dry_run:
+            while True:
+                try:
+                    savable_project.save()
+                    break
+                except requests.exceptions.ReadTimeout:
+                    pass
