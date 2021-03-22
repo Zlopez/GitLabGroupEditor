@@ -3,11 +3,14 @@
 
 import argparse
 import os
+import requests
+import yaml
 
 import gitlab
 
 
 CONFIG_FILE = "python-gitlab.cfg"
+DISTROBAKER_URL = "https://gitlab.cee.redhat.com/osci/distrobaker_centos_stream_config/-/raw/rhel9/distrobaker.yaml"
 
 
 def parse_args():
@@ -40,6 +43,13 @@ def parse_args():
         "--emails_enabled",
         help="Enable/disable email notifications for the projects in group",
         choices=["True", "False"]
+    )
+
+    parser.add_argument(
+        "--filter",
+        help="Whether to apply actions only to packages included in the DistroBaker sync",
+        choices=["synced", "non_synced", "all"],
+        default="all"
     )
 
     parser.add_argument(
@@ -77,6 +87,13 @@ if __name__ == "__main__":
     except KeyError:
         pass
 
+    if args.filter != "all":
+        r = requests.get(DISTROBAKER_URL, timeout=10)
+        r.raise_for_status()
+
+        dbcfg = yaml.load(r.text, Loader=yaml.SafeLoader)
+        package_filter = dbcfg["configuration"]["control"]["exclude"]["rpms"]
+
     # Create Gitlab object
     gl = gitlab.Gitlab.from_config(config_files=[config_file])
 
@@ -85,6 +102,10 @@ if __name__ == "__main__":
 
     # Update each project in the group
     for project in group.projects.list(as_list=False):
+        if (args.filter == "synced" and project.name in package_filter) or \
+                (args.filter == "non_synced" and project.name not in package_filter):
+            continue
+
         print("Project {group_name}/{project_name}".format(
                 group_name=group.name, project_name=project.name)
         )
