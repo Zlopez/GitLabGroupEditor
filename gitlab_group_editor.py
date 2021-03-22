@@ -105,4 +105,10 @@ if __name__ == "__main__":
                 old=savable_project.emails_disabled, new=emails_disabled)
             )
             savable_project.emails_disabled = emails_disabled
-        savable_project.save()
+
+        while True:
+            try:
+                savable_project.save()
+                break
+            except requests.exceptions.ReadTimeout:
+                pass
