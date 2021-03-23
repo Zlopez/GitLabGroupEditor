@@ -58,6 +58,12 @@ def parse_args():
         action=argparse.BooleanOptionalAction
     )
 
+    parser.add_argument(
+        "--protect-branch",
+        help="Branch to protect. Developers can merge, only maintainers and above can push",
+        default="all"
+    )
+
     return parser.parse_args()
 
 
@@ -69,6 +75,7 @@ if __name__ == "__main__":
     merge_requests_enabled = None
     issues_enabled = None
     emails_disabled = None
+    protect_branch = None
 
     if args.merge_requests_enabled:
         merge_requests_enabled = args.merge_requests_enabled == "True"
@@ -78,6 +85,9 @@ if __name__ == "__main__":
 
     if args.emails_enabled:
         emails_disabled = args.emails_enabled != "True"
+
+    if args.protect_branch:
+        protect_branch = args.protect_branch
 
     config_file = CONFIG_FILE
 
@@ -132,6 +142,16 @@ if __name__ == "__main__":
                 old=savable_project.emails_disabled, new=emails_disabled)
             )
             savable_project.emails_disabled = emails_disabled
+
+        if protect_branch is not None:
+            branch_to_protect = savable_project.branches.get(protect_branch)
+            print("* protected_branches: {old.name} -> {new.name}".format(
+                old=branch_to_protect, new=branch_to_protect
+            ))
+
+            if not args.dry_run:
+                branch_to_protect.protect(developers_can_push=False, developers_can_merge=True)
+
 
         if not args.dry_run:
             while True:
