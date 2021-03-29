@@ -70,6 +70,11 @@ def parse_args():
         help="Branch to protect. Developers can merge, only maintainers and above can push"
     )
 
+    parser.add_argument(
+        "--ci_config_path",
+        help="The path to the Gitlab CI configuration."
+    )
+
     return parser.parse_args()
 
 
@@ -83,6 +88,7 @@ if __name__ == "__main__":
     issues_enabled = None
     emails_disabled = None
     protect_branch = None
+    ci_config_path = None
 
     if args.merge_requests_enabled:
         merge_requests_enabled = args.merge_requests_enabled == "True"
@@ -98,6 +104,9 @@ if __name__ == "__main__":
 
     if args.protect_branch:
         protect_branch = args.protect_branch
+
+    if args.ci_config_path:
+        ci_config_path = args.ci_config_path
 
     config_file = CONFIG_FILE
 
@@ -158,6 +167,12 @@ if __name__ == "__main__":
                 old=savable_project.emails_disabled, new=emails_disabled)
             )
             savable_project.emails_disabled = emails_disabled
+
+        if ci_config_path is not None:
+            print("* ci_config_path: {old} -> {new}".format(
+                old=savable_project.ci_config_path, new=ci_config_path)
+            )
+            savable_project.ci_config_path = ci_config_path
 
         if protect_branch is not None:
             branch_to_protect = savable_project.branches.get(protect_branch)
