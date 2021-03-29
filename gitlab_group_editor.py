@@ -60,8 +60,7 @@ def parse_args():
 
     parser.add_argument(
         "--protect-branch",
-        help="Branch to protect. Developers can merge, only maintainers and above can push",
-        default="all"
+        help="Branch to protect. Developers can merge, only maintainers and above can push"
     )
 
     return parser.parse_args()
