@@ -130,3 +130,10 @@ dmypy.json
 
 # Configuration file
 python-gitlab.cfg
+
+# Temporary and backup files
+*~
+*.swp
+
+# PyCharm
+/.idea
