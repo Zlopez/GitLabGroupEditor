@@ -33,6 +33,13 @@ def parse_args():
         help="Enable/disable merge requests for the projects in group",
         choices=["True", "False"]
     )
+
+    parser.add_argument(
+        "--merge_method",
+        help="Choose the merge method for MRs. See https://docs.gitlab.com/ee/api/projects.html#project-merge-method",
+        choices=["merge", "rebase_merge", "ff"]
+    )
+
     parser.add_argument(
         "--issues_enabled",
         help="Enable/disable issues for the projects in group",
@@ -72,12 +79,16 @@ if __name__ == "__main__":
     group = args.group
     visibility = args.visibility
     merge_requests_enabled = None
+    merge_method = None
     issues_enabled = None
     emails_disabled = None
     protect_branch = None
 
     if args.merge_requests_enabled:
         merge_requests_enabled = args.merge_requests_enabled == "True"
+
+    if args.merge_method:
+        merge_method = args.merge_method
 
     if args.issues_enabled:
         issues_enabled = args.issues_enabled == "True"
@@ -129,6 +140,12 @@ if __name__ == "__main__":
                 old=savable_project.merge_requests_enabled, new=merge_requests_enabled)
             )
             savable_project.merge_requests_enabled = merge_requests_enabled
+
+        if merge_method is not None:
+            print("* merge_method: {old} -> {new}".format(
+                old=savable_project.merge_method, new=merge_method)
+            )
+            savable_project.merge_method = merge_method
 
         if issues_enabled is not None:
             print("* issues_enabled: {old} -> {new}".format(
