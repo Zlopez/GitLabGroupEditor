@@ -81,6 +81,13 @@ def parse_args():
         help="The path to the Gitlab CI configuration."
     )
 
+    parser.add_argument(
+        "--c9s_setup",
+        help="Configure the selected projects with all of the standard CentOS Stream 9 settings. "
+             "Does not set visibility. Idempotent.",
+        action=argparse.BooleanOptionalAction
+    )
+
     return parser.parse_args()
 
 
@@ -117,6 +124,16 @@ if __name__ == "__main__":
 
     if args.only_allow_merge_if_pipeline_succeeds:
         only_allow_merge_if_pipeline_succeeds = args.only_allow_merge_if_pipeline_succeeds
+
+    if args.c9s_setup:
+        merge_request_enabled = True
+        merge_method = "ff"
+        issues_enabled = False
+        emails_disabled = False
+        protect_branch = "c9s"
+        ci_config_path = "global-tasks.yml@redhat/centos-stream/ci-cd/dist-git-gating-tests"
+        only_allow_merge_if_pipeline_succeeds = True
+
 
     config_file = CONFIG_FILE
 
