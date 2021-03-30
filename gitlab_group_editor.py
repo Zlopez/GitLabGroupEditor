@@ -209,13 +209,18 @@ if __name__ == "__main__":
             savable_project.only_allow_merge_if_pipeline_succeeds = only_allow_merge_if_pipeline_succeeds
 
         if protect_branch is not None:
-            branch_to_protect = savable_project.branches.get(protect_branch)
-            print("* protected_branches: {old.name} -> {new.name}".format(
-                old=branch_to_protect, new=branch_to_protect
-            ))
+            try:
+                branch_to_protect = savable_project.branches.get(protect_branch)
+                print("* protected_branches: {old.name} -> {new.name}".format(
+                    old=branch_to_protect, new=branch_to_protect
+                ))
 
-            if not args.dry_run:
-                branch_to_protect.protect(developers_can_push=False, developers_can_merge=True)
+                if not args.dry_run:
+                    branch_to_protect.protect(developers_can_push=False, developers_can_merge=True)
+            except gitlab.exceptions.GitlabGetError as e:
+                print("WARNING: {group_name}/{project_name} has no '{branch_name}' branch".format(
+                      group_name=group.name, project_name=project.name, branch_name=protect_branch)
+                )
 
 
         if not args.dry_run:
