@@ -41,6 +41,12 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--only_allow_merge_if_pipeline_succeeds",
+        help="Merge requests may not be merged until the pipeline passes",
+        choices=["True", "False"]
+    )
+
+    parser.add_argument(
         "--issues_enabled",
         help="Enable/disable issues for the projects in group",
         choices=["True", "False"]
@@ -89,6 +95,7 @@ if __name__ == "__main__":
     emails_disabled = None
     protect_branch = None
     ci_config_path = None
+    only_allow_merge_if_pipeline_succeeds = None
 
     if args.merge_requests_enabled:
         merge_requests_enabled = args.merge_requests_enabled == "True"
@@ -107,6 +114,9 @@ if __name__ == "__main__":
 
     if args.ci_config_path:
         ci_config_path = args.ci_config_path
+
+    if args.only_allow_merge_if_pipeline_succeeds:
+        only_allow_merge_if_pipeline_succeeds = args.only_allow_merge_if_pipeline_succeeds
 
     config_file = CONFIG_FILE
 
@@ -173,6 +183,13 @@ if __name__ == "__main__":
                 old=savable_project.ci_config_path, new=ci_config_path)
             )
             savable_project.ci_config_path = ci_config_path
+
+        if only_allow_merge_if_pipeline_succeeds is not None:
+            print("* only_allow_merge_if_pipeline_succeeds: {old} -> {new}".format(
+                old=savable_project.only_allow_merge_if_pipeline_succeeds,
+                new=only_allow_merge_if_pipeline_succeeds == "True")
+            )
+            savable_project.only_allow_merge_if_pipeline_succeeds = only_allow_merge_if_pipeline_succeeds
 
         if protect_branch is not None:
             branch_to_protect = savable_project.branches.get(protect_branch)
