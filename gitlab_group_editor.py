@@ -204,7 +204,7 @@ if __name__ == "__main__":
         if only_allow_merge_if_pipeline_succeeds is not None:
             print("* only_allow_merge_if_pipeline_succeeds: {old} -> {new}".format(
                 old=savable_project.only_allow_merge_if_pipeline_succeeds,
-                new=only_allow_merge_if_pipeline_succeeds == "True")
+                new=only_allow_merge_if_pipeline_succeeds)
             )
             savable_project.only_allow_merge_if_pipeline_succeeds = only_allow_merge_if_pipeline_succeeds
 
