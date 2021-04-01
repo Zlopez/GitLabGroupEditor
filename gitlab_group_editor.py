@@ -126,7 +126,7 @@ if __name__ == "__main__":
         only_allow_merge_if_pipeline_succeeds = args.only_allow_merge_if_pipeline_succeeds
 
     if args.c9s_setup:
-        merge_request_enabled = True
+        merge_requests_enabled = True
         merge_method = "ff"
         issues_enabled = False
         emails_disabled = False
