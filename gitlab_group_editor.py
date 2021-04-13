@@ -82,6 +82,12 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--shared_runners_enabled",
+        help="Enable/disable shared CI runners for the projects in group",
+        choices=["True", "False"]
+    )
+
+    parser.add_argument(
         "--c9s_setup",
         help="Configure the selected projects with all of the standard CentOS Stream 9 settings. "
              "Does not set visibility. Idempotent.",
@@ -103,6 +109,7 @@ if __name__ == "__main__":
     protect_branch = None
     ci_config_path = None
     only_allow_merge_if_pipeline_succeeds = None
+    shared_runners_enabled = None
 
     if args.merge_requests_enabled:
         merge_requests_enabled = args.merge_requests_enabled == "True"
@@ -125,6 +132,9 @@ if __name__ == "__main__":
     if args.only_allow_merge_if_pipeline_succeeds:
         only_allow_merge_if_pipeline_succeeds = args.only_allow_merge_if_pipeline_succeeds
 
+    if args.shared_runners_enabled:
+        shared_runners_enabled = args.shared_runners_enabled == "True"
+
     if args.c9s_setup:
         merge_requests_enabled = True
         merge_method = "ff"
@@ -133,6 +143,7 @@ if __name__ == "__main__":
         protect_branch = "c9s"
         ci_config_path = "global-tasks.yml@redhat/centos-stream/ci-cd/dist-git-gating-tests"
         only_allow_merge_if_pipeline_succeeds = True
+        shared_runners_enabled = False
 
 
     config_file = CONFIG_FILE
@@ -207,6 +218,12 @@ if __name__ == "__main__":
                 new=only_allow_merge_if_pipeline_succeeds)
             )
             savable_project.only_allow_merge_if_pipeline_succeeds = only_allow_merge_if_pipeline_succeeds
+
+        if shared_runners_enabled is not None:
+            print("* shared_runners_enabled: {old} -> {new}".format(
+                old=savable_project.shared_runners_enabled, new=shared_runners_enabled)
+            )
+            savable_project.shared_runners_enabled = shared_runners_enabled
 
         if protect_branch is not None:
             try:
