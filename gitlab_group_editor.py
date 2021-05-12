@@ -11,7 +11,7 @@ import gitlab
 
 CONFIG_FILE = "python-gitlab.cfg"
 DISTROBAKER_URL = "https://gitlab.cee.redhat.com/osci/distrobaker_centos_stream_config/-/raw/rhel9/distrobaker.yaml"
-
+DEFAULT_MR_TEMPLATE = "Merge Request Template.md"
 
 def parse_args():
     """
@@ -88,6 +88,15 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--merge-request-template",
+        help="A markdown file to use as a template for merge requests.",
+        type=argparse.FileType('r'),
+        nargs="?",
+        const=open(DEFAULT_MR_TEMPLATE, 'r'),
+        default=None,
+    )
+
+    parser.add_argument(
         "--c9s_setup",
         help="Configure the selected projects with all of the standard CentOS Stream 9 settings. "
              "Does not set visibility. Idempotent.",
@@ -110,6 +119,7 @@ if __name__ == "__main__":
     ci_config_path = None
     only_allow_merge_if_pipeline_succeeds = None
     shared_runners_enabled = None
+    mr_template = None
 
     if args.merge_requests_enabled:
         merge_requests_enabled = args.merge_requests_enabled == "True"
@@ -135,6 +145,10 @@ if __name__ == "__main__":
     if args.shared_runners_enabled:
         shared_runners_enabled = args.shared_runners_enabled == "True"
 
+    if args.merge_request_template:
+        mr_template = args.merge_request_template.read()
+        args.merge_request_template.close()
+
     if args.c9s_setup:
         merge_requests_enabled = True
         merge_method = "ff"
@@ -144,6 +158,8 @@ if __name__ == "__main__":
         ci_config_path = "global-tasks.yml@redhat/centos-stream/ci-cd/dist-git-gating-tests"
         only_allow_merge_if_pipeline_succeeds = True
         shared_runners_enabled = False
+        with open(DEFAULT_MR_TEMPLATE, "r") as f:
+            mr_template = f.read()
 
 
     config_file = CONFIG_FILE
@@ -224,6 +240,11 @@ if __name__ == "__main__":
                 old=savable_project.shared_runners_enabled, new=shared_runners_enabled)
             )
             savable_project.shared_runners_enabled = shared_runners_enabled
+
+        if mr_template is not None:
+            print("* merge_request_template: {old} -> {new}".format(
+                old=savable_project.merge_requests_template, new=mr_template)
+            )
 
         if protect_branch is not None:
             try:
